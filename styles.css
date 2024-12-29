@@ -1,0 +1,32 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    /*align-items: center;*/
+    justify-content: center;
+    z-index: 1; /* Bring overlay elements on top */
+    pointer-events: none; /* Optional: Allows canvas to handle clicks if needed */
+  }
+
+  p {
+    font-family: 'Consolas', Courier, monospace;
+    font-size: 50px;
+    top: 120px;
+    left: 50px;
+    color: white;
+  }
