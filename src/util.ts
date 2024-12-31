@@ -6,18 +6,28 @@ class Star{
     prevScreenX: number | undefined;
     prevScreenY: number | undefined;
     onScreen: boolean;
-    selected: boolean;
-    chunk: Chunk;
+    chunk: Chunk
+    r: number;
+    g: number;
+    b: number;
+    dim: boolean;
+    currentBrightness: number;
+    brightnessStep: number;
 
-    constructor(x: number, y: number, z: number, chunk: Chunk){
+    constructor(x: number, y: number, z: number, chunk: Chunk, brightnessStep: number, r: number, g: number, b: number){
         this.pos = new Vector(x, y, z)
         this.screenX = 0;
         this.screenY = 0;
         this.prevScreenX = undefined;
         this.prevScreenY = undefined;
         this.onScreen = false;
-        this.selected = false;
         this.chunk = chunk;
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.dim = false;
+        this.currentBrightness = 0
+        this.brightnessStep = brightnessStep
     }
 
 
@@ -98,6 +108,15 @@ class Vector{
     distance(v2: Vector): number{
         let diff = this.subtract(v2);
         return Math.sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z)
+    }
+
+
+    angle(v2: Vector): number{
+        return Math.acos(this.dotProduct(v2) / (this.length() * v2.length()))
+    }
+
+    length(){
+        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z)
     }
 
 }

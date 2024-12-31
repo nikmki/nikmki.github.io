@@ -12,23 +12,23 @@ if(!ctx){
 }
 
 
-const chunkRadius = 12;
+const chunkRadius = 3;
 const centerIndex = chunkRadius + 1;
-const chunkMap: boolean[][][] = []
+const chunkLoadStates: boolean[][][] = []
+const chunkSize = 400
 for(let i = 0; i < chunkRadius * 2 + 1; i++){
     let matrix2D: boolean[][] = [];
     for (let j = 0; j < chunkRadius * 2 + 1; j++) {
         let row: boolean[] = new Array(chunkRadius * 2 + 1).fill(false);
         matrix2D.push(row);
     }
-    chunkMap.push(matrix2D);
+    chunkLoadStates.push(matrix2D);
 }
 
-const loadedChunks: Chunk[] = []
+let loadedChunks: Chunk[] = []
 let currentChunk = new Chunk(-1000, -1000, -1000)
 
 let stars: Star[] = []
-const spaceSize = 1000
 
 
 const viewAxisXStart = new Vector(0.001, 0, 0)
@@ -42,9 +42,9 @@ let position = new Vector(0, 0, 0)
 
 
 const rotationSpeed = 0.001;
-const maxSpeed = 3
+const maxSpeed = 2
 const minSpeed = 0
-const startSpeed = 0.1
+const startSpeed = 0
 const accelerationAmount = 0.0003
 const decelerationAmount = -0.0006
 
@@ -57,10 +57,13 @@ let speedDelta = startSpeed;
 let acceleration = 0;
 
 
+// const starColors = [[255, 180, 180], [255, 255, 255], [255,255, 255], [255, 230, 150], [200, 200, 255]]
+const starColors = [[255, 255, 255]]
 
 const chunkLoading = (centerChunk: Chunk) => {
 
-    // let start = performance.now()
+    let start = performance.now()
+    let newLoadedChunks = []
 
     for (let i = loadedChunks.length - 1; i >= 0; i--) {
         const chunk = loadedChunks[i];
@@ -68,41 +71,47 @@ const chunkLoading = (centerChunk: Chunk) => {
         let loaded = undefined
 
         try{
-            loaded = chunkMap[chunk.x - centerChunk.x + centerIndex][chunk.y - centerChunk.y + centerIndex][chunk.z - centerChunk.z + centerIndex];
+            loaded = chunkLoadStates[chunk.x - centerChunk.x + centerIndex][chunk.y - centerChunk.y + centerIndex][chunk.z - centerChunk.z + centerIndex];
         }catch(error){}
         
 
-        if(loaded === undefined){
-            loadedChunks.splice(i, 1)
-        }else{
-            chunkMap[chunk.x - centerChunk.x + centerIndex][chunk.y - centerChunk.y + centerIndex][chunk.z - centerChunk.z + centerIndex] = true
+        if(loaded !== undefined){
+            newLoadedChunks.push(chunk)
+            chunkLoadStates[chunk.x - centerChunk.x + centerIndex][chunk.y - centerChunk.y + centerIndex][chunk.z - centerChunk.z + centerIndex] = true
         }
 
     }
 
-    // console.log(`First part: ${performance.now() - start} milliseconds`);
+    loadedChunks = newLoadedChunks
+    console.log(`First part: ${performance.now() - start} milliseconds. Chunks length: ${loadedChunks.length}`);
 
-    // start = performance.now()
+    start = performance.now()
     
-    for (let x = 0; x < chunkMap.length; x++) {
-        for (let y = 0; y < chunkMap[x].length; y++) {
-            for (let z = 0; z < chunkMap[x][y].length; z++) {
+    for (let x = 0; x < chunkLoadStates.length; x++) {
+        for (let y = 0; y < chunkLoadStates[x].length; y++) {
+            for (let z = 0; z < chunkLoadStates[x][y].length; z++) {
                 
-                if(!chunkMap[x][y][z]){
+                if(!chunkLoadStates[x][y][z]){
                     const newChunk = new Chunk(centerChunk.x - centerIndex + x, centerChunk.y - centerIndex + y, centerChunk.z - centerIndex + z)
                     loadedChunks.push(newChunk)
-                    const nStars = getRandomIntInRange(1,2)
+                    const nStars = getRandomIntInRange(50, 80)
                     for (let i = 0; i < nStars; i++) {
+                        const starColor = starColors[getRandomInt(starColors.length)]
                         newChunk.stars.push(new Star(
-                            getRandomIntInRange(newChunk.x * 100, newChunk.x * 100 + 100), 
-                            getRandomIntInRange(newChunk.y * 100, newChunk.y * 100 + 100), 
-                            getRandomIntInRange(newChunk.z * 100, newChunk.z * 100 + 100), newChunk))
-                        
+                            getRandomIntInRange(newChunk.x * chunkSize, newChunk.x * chunkSize + chunkSize), 
+                            getRandomIntInRange(newChunk.y * chunkSize, newChunk.y * chunkSize + chunkSize), 
+                            getRandomIntInRange(newChunk.z * chunkSize, newChunk.z * chunkSize + chunkSize), 
+                            newChunk,
+                            0.01 + Math.random() * 0.03,
+                            starColor[0],
+                            starColor[1],
+                            starColor[2]
+                        ))
                     }
                 }
 
 
-                chunkMap[x][y][z] = false;
+                chunkLoadStates[x][y][z] = false;
 
             }
             
@@ -115,13 +124,15 @@ const chunkLoading = (centerChunk: Chunk) => {
         stars.push(...chunk.stars)
     })
 
-    // console.log(`Second part: ${performance.now() - start} milliseconds`);
+    console.log(`Second part: ${performance.now() - start} milliseconds`);
 }
 
 
 let oldTimeStamp: number;
 let fps = 0;
 let deltaTime = 0;
+
+let trails = 1
 
 const animationCallBack = (timeStamp: number) => {
     if(canvas.width != window.innerWidth || canvas.height != window.innerHeight){
@@ -138,39 +149,37 @@ const animationCallBack = (timeStamp: number) => {
     fps = Math.round(1000 / deltaTime)
 
 
-    const chunkX = Math.floor(position.x / 100)
-    const chunkY = Math.floor(position.y / 100)
-    const chunkZ = Math.floor(position.z / 100)
+    const chunkX = Math.floor(position.x / chunkSize)
+    const chunkY = Math.floor(position.y / chunkSize)
+    const chunkZ = Math.floor(position.z / chunkSize)
 
     
+
     if(currentChunk.x !== chunkX || currentChunk.y !== chunkY || currentChunk.z !== chunkZ){
         currentChunk = new Chunk(chunkX, chunkY, chunkZ);
-        
         chunkLoading(currentChunk);
-        //console.log(loadedChunks)
     }
 
+
+    if(speedDelta > 0.4){
+        trails = Math.max(0.3, 1.4 - speedDelta)
+    }else{
+        trails = 1
+    }
 
     if(xRotDelta !== 0 || yRotDelta !== 0){
         viewVector = viewVector.rotateVector(viewAxisX, yRotDelta * deltaTime)
         viewVector = viewVector.rotateVector(viewAxisY, xRotDelta * deltaTime)
         viewAxisY = viewAxisY.rotateVector(viewAxisX, yRotDelta * deltaTime)
         viewAxisX = viewAxisX.rotateVector(viewAxisY, xRotDelta * deltaTime)
-
-
-        // viewVector = viewVectorStart.rotateVector(viewAxisX, yRot).rotateVector(viewAxisY, xRot)
-        // viewAxisY = viewAxisYStart.rotateVector(viewAxisX, yRot)
-        // viewAxisX = viewAxisXStart.rotateVector(viewAxisY, xRot)
     }
 
     speedDelta = Math.min(maxSpeed, Math.max(minSpeed, speedDelta + (acceleration * deltaTime)))
     position = position.add(viewVector.multiply(speedDelta * deltaTime))
     
-    
-    
-    ctx.clearRect(0,0, canvas.width, canvas.height)
-    ctx.fillStyle = '#000000'
+    ctx.fillStyle = `rgba(0,0,0, ${trails})`
     ctx.fillRect(0, 0, canvas.width, canvas.height)
+    
 
 
     ctx.font = '25px Arial';
@@ -184,49 +193,54 @@ const animationCallBack = (timeStamp: number) => {
         setCoordsOnScreen(position, viewVector, viewAxisX, viewAxisY, star, canvas.width, canvas.height)
     });
     
-
-    let starsOnScreen = 0;
+    
     stars.forEach(star => {
 
-        
-        if(star.onScreen){
-
-            let dist = position.distance(star.pos)
-            let sizeFactor = 1 + Math.max(2 * (1000 - dist) / 1000, -0.5);
-
-            // drawCircle(ctx, star.screenX, star.screenY, 6 * sizeFactor, "rgba(255, 255, 255, 0.05)")
-            // drawCircle(ctx, star.screenX, star.screenY, 4 * sizeFactor, "rgba(255, 255, 255, 0.05)")
-            // drawCircle(ctx, star.screenX, star.screenY, 2 * sizeFactor, "#FFFFFF")
-            ctx.fillStyle = "#FFFFFF"
-
-            if(star.selected){
-                ctx.fillStyle = '#FF0000'
-            }
-            ctx.fillRect(star.screenX, star.screenY, 2 * sizeFactor, 2 * sizeFactor)
-
-
-
-            // ctx.strokeStyle = "#FFFFFF"; 
-            // ctx.lineWidth = 5;
-            
-            // ctx.beginPath();
-
-            
-            // ctx.moveTo(star.screenX, star.screenY); 
-
-            
-            // ctx.lineTo(star.prevScreenX!, star.prevScreenY!); 
-            // ctx.stroke();
-
-
-            starsOnScreen++;
+        if(!star.onScreen){
+            return
         }
+
+        const dist = position.distance(star.pos)
+        if(dist > 1100){
+            return
+        }
+        
+
+        if(Math.random() < 0.01){
+            star.dim = !star.dim
+        }
+        
+
+        const sizeFactor = Math.min((1100 / dist), 100) 
+        const dimmer = star.dim && sizeFactor < 2 ? 60 : 0;
+
+        
+        const color = `rgba(${star.r - dimmer}, ${star.g - dimmer}, ${star.b - dimmer}, 1)`
+
+        if(sizeFactor < 2){
+            ctx.fillStyle = color
+            const s = 2 * sizeFactor
+            ctx.fillRect(star.screenX - s * 0.5, star.screenY - s * 0.5, s, s)
+        }else{
+            drawCircle(ctx, star.screenX, star.screenY, sizeFactor, color)
+
+
+            if(speedDelta < 0.3){
+                const brightnessFactor = Math.sin(star.currentBrightness) * 0.1 + 1.4
+                drawCircle(ctx, star.screenX, star.screenY, sizeFactor * brightnessFactor, "rgba(255,255,255,0.2)")
+                star.currentBrightness += star.brightnessStep
+                if(star.currentBrightness > 2 * Math.PI){
+                    star.currentBrightness = 0
+                }
+            }
+            
+        }    
+        
         
        
     })
-    
-    //console.log(starsOnScreen)
 
+   
     
     window.requestAnimationFrame(animationCallBack)
 }
@@ -234,25 +248,7 @@ const animationCallBack = (timeStamp: number) => {
 window.requestAnimationFrame(animationCallBack)
 
 
-// Add a click event listener to the canvas
-canvas.addEventListener('click', (event: MouseEvent) => {
-    // Get the bounding rectangle of the canvas
-    const rect = canvas.getBoundingClientRect();
 
-    // Calculate click position relative to the canvas
-    const clickX = event.clientX - rect.left;
-    const clickY = event.clientY - rect.top;
-
-    for (const star of stars) {
-        if(clickX > star.screenX - 2 && clickX < star.screenX + 2 
-            && clickY > star.screenY - 2 && clickY < star.screenY + 2
-        ){
-            star.selected = true;
-            break;
-        }
-    }
-
-});
 
 
 document.addEventListener('keydown', (event: KeyboardEvent) => {
