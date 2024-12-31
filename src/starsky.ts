@@ -41,12 +41,12 @@ let viewAxisY = viewAxisYStart
 let position = new Vector(0, 0, 0)
 
 
-const rotationSpeed = 0.001;
-const maxSpeed = 2
+const rotationSpeed = 0.01;
+const maxSpeed = 30
 const minSpeed = 0
 const startSpeed = 0
-const accelerationAmount = 0.0003
-const decelerationAmount = -0.0006
+const accelerationAmount = 0.08
+const decelerationAmount = -0.16
 
 
 
@@ -129,7 +129,6 @@ const chunkLoading = (centerChunk: Chunk) => {
 
 
 let oldTimeStamp: number;
-let fps = 0;
 let deltaTime = 0;
 
 let trails = 1
@@ -144,9 +143,8 @@ const animationCallBack = (timeStamp: number) => {
         oldTimeStamp = timeStamp
     }
 
-    deltaTime = timeStamp - oldTimeStamp
+    deltaTime = (timeStamp - oldTimeStamp) / 16.67
     oldTimeStamp = timeStamp;
-    fps = Math.round(1000 / deltaTime)
 
 
     const chunkX = Math.floor(position.x / chunkSize)
@@ -161,8 +159,8 @@ const animationCallBack = (timeStamp: number) => {
     }
 
 
-    if(speedDelta > 0.4){
-        trails = Math.max(0.3, 1.4 - speedDelta)
+    if(speedDelta > 10){
+        trails = Math.max(0.3, (20 - speedDelta) * 0.1)
     }else{
         trails = 1
     }
@@ -184,7 +182,6 @@ const animationCallBack = (timeStamp: number) => {
 
     ctx.font = '25px Arial';
     ctx.fillStyle = 'white';
-    ctx.fillText("FPS: " + fps, 10, 30);
     ctx.fillText(`X: ${Math.round(position.x)} Y: ${Math.round(position.y)} Z: ${Math.round(position.z)}`, 10, 70);
     ctx.fillText(`Speed: ${speedDelta.toFixed(3)}`, 10, 110);
 
@@ -219,13 +216,13 @@ const animationCallBack = (timeStamp: number) => {
 
         if(sizeFactor < 2){
             ctx.fillStyle = color
-            const s = 2 * sizeFactor
-            ctx.fillRect(star.screenX - s * 0.5, star.screenY - s * 0.5, s, s)
+            const size = 2 * sizeFactor
+            ctx.fillRect(star.screenX - size * 0.5, star.screenY - size * 0.5, size, size)
         }else{
             drawCircle(ctx, star.screenX, star.screenY, sizeFactor, color)
 
 
-            if(speedDelta < 0.3){
+            if(speedDelta < 8){
                 const brightnessFactor = Math.sin(star.currentBrightness) * 0.1 + 1.4
                 drawCircle(ctx, star.screenX, star.screenY, sizeFactor * brightnessFactor, "rgba(255,255,255,0.2)")
                 star.currentBrightness += star.brightnessStep
