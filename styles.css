@@ -21,7 +21,6 @@ canvas {
     /*align-items: center;*/
     justify-content: center;
     z-index: 1; /* Bring overlay elements on top */
-    pointer-events: none; /* Optional: Allows canvas to handle clicks if needed */
   }
 
   p {
