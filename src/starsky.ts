@@ -15,7 +15,7 @@ if(!ctx){
 const chunkRadius = 3;
 const centerIndex = chunkRadius + 1;
 const chunkLoadStates: boolean[][][] = []
-const chunkSize = 400
+const chunkSize = 500
 for(let i = 0; i < chunkRadius * 2 + 1; i++){
     let matrix2D: boolean[][] = [];
     for (let j = 0; j < chunkRadius * 2 + 1; j++) {
