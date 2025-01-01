@@ -23,10 +23,21 @@ canvas {
     z-index: 1; /* Bring overlay elements on top */
   }
 
-  p {
+  .overlay-content {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center; /* Center items horizontally */
+  }
+
+  .title {
     font-family: 'Consolas', Courier, monospace;
-    font-size: 50px;
+    font-size: 48pt;
     top: 120px;
-    left: 50px;
+    color: white;
+  }
+
+  .instruction {
+    font-family: 'Consolas', Courier, monospace;
+    font-size: 18pt;
     color: white;
   }
