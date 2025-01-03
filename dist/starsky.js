@@ -166,7 +166,6 @@ function chunkLoading(centerChunk) {
         }
     }
     loadedChunks = newLoadedChunks;
-    console.log(`First part: ${performance.now() - start} milliseconds. Chunks length: ${loadedChunks.length}`);
     start = performance.now();
     for (let x = 0; x < chunkLoadStates.length; x++) {
         for (let y = 0; y < chunkLoadStates[x].length; y++) {
@@ -188,7 +187,6 @@ function chunkLoading(centerChunk) {
     loadedChunks.forEach(chunk => {
         stars.push(...chunk.stars);
     });
-    console.log(`Second part: ${performance.now() - start} milliseconds`);
 }
 function keyDownListener(event) {
     switch (event.key) {

@@ -244,7 +244,6 @@ function chunkLoading(centerChunk: Chunk){
     }
 
     loadedChunks = newLoadedChunks
-    console.log(`First part: ${performance.now() - start} milliseconds. Chunks length: ${loadedChunks.length}`);
 
     start = performance.now()
     
@@ -284,8 +283,6 @@ function chunkLoading(centerChunk: Chunk){
     loadedChunks.forEach(chunk => {
         stars.push(...chunk.stars)
     })
-
-    console.log(`Second part: ${performance.now() - start} milliseconds`);
 }
 
 
